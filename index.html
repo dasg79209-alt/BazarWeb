@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ডিজিটাল বাজার ক্যালকুলেটর</title>
+    <style>
+        :root { --primary: #2ecc71; --secondary: #27ae60; --bg: #f5f6fa; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
+
+        /* Splash Screen Design */
+        #splash {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 1000;
+            transition: opacity 0.8s ease-out;
+        }
+        #splash img { width: 120px; height: 120px; margin-bottom: 20px; animation: pulse 1.5s infinite; }
+        #splash h1 { color: var(--primary); font-size: 24px; margin: 0; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        /* Main Card Design */
+        .card { 
+            background: #fff; padding: 25px; border-radius: 20px; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1); width: 90%; max-width: 400px; 
+            display: none; /* শুরুতে লুকানো থাকবে */
+            animation: slideUp 0.6s ease-out;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Menu Section */
+        .menu-wrapper { margin-bottom: 20px; text-align: center; }
+        .item-list { display: flex; overflow-x: auto; gap: 12px; padding: 10px 0; scrollbar-width: none; }
+        .item-list::-webkit-scrollbar { display: none; }
+        .item-btn { 
+            background: #f8f9fa; padding: 10px 20px; border-radius: 50px; 
+            border: 1px solid #ddd; cursor: pointer; transition: 0.3s; white-space: nowrap;
+        }
+        .item-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        h2 { text-align: center; color: #2c3e50; margin-top: 0; font-size: 22px; }
+        .selected-name { color: var(--primary); }
+
+        .input-box { margin-bottom: 15px; }
+        label { font-size: 13px; color: #666; display: block; margin-bottom: 5px; }
+        input { 
+            width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 12px; 
+            font-size: 16px; box-sizing: border-box; transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 8px rgba(46, 204, 113, 0.1); }
+
+        button { 
+            width: 100%; padding: 15px; background: var(--primary); color: white; 
+            border: none; border-radius: 12px; cursor: pointer; font-size: 18px; 
+            font-weight: bold; transition: 0.3s; margin-top: 10px;
+        }
+        button:active { transform: scale(0.97); }
+
+        #result { 
+            margin-top: 20px; padding: 15px; border-radius: 15px; 
+            background: #e8f5e9; text-align: center; display: none;
+            border: 1px solid #c8e6c9;
+        }
+        .res-val { font-size: 30px; color: var(--secondary); font-weight: 800; display: block; }
+    </style>
+</head>
+<body>
+
+<div id="splash">
+    <img src="logo.png" alt="Logo">
+    <h1>ডিজিটাল বাজার</h1>
+    <p style="color: #888; font-size: 12px;">লোড হচ্ছে...</p>
+</div>
+
+<div class="card" id="mainCard">
+    <div class="menu-wrapper">
+        <div class="item-list">
+            <div class="item-btn" onclick="selectItem(this, 'মাছ')">🐟 মাছ</div>
+            <div class="item-btn" onclick="selectItem(this, 'মাংস')">🍖 মাংস</div>
+            <div class="item-btn" onclick="selectItem(this, 'তেল')">🧴 তেল</div>
+            <div class="item-btn" onclick="selectItem(this, 'সবজি')">🥦 সবজি</div>
+            <div class="item-btn" onclick="selectItem(this, 'মশলা')">🌶️ মশলা</div>
+            <div class="item-btn" onclick="selectItem(this, 'চাল/ডাল')">🍚 চাল/ডাল</div>
+        </div>
+    </div>
+
+    <h2><span id="display-name" class="selected-name">আইটেম</span> এর হিসাব</h2>
+    
+    <div class="input-box">
+        <label>বাজারের ওজন (গ্রাম)</label>
+        <input type="number" id="baseGram" placeholder="যেমন: ১০০০ বা ২৫০">
+    </div>
+    <div class="input-box">
+        <label>বাজারের দাম (টাকা)</label>
+        <input type="number" id="basePrice" placeholder="ঐ ওজনের সঠিক দাম দিন">
+    </div>
+
+    <hr style="border: 0; border-top: 1px dashed #ddd; margin: 20px 0;">
+
+    <div class="input-box">
+        <label>আপনার বাজেট (টাকা)</label>
+        <input type="number" id="targetMoney" placeholder="কত টাকার কিনতে চান?">
+    </div>
+
+    <button onclick="calculate()">হিসাব দেখুন</button>
+
+    <div id="result">
+        <span id="res-text" style="color: #555;"></span>
+        <span class="res-val" id="res-gram"></span>
+    </div>
+</div>
+
+<script>
+    // Splash Screen সরাবার লজিক
+    window.onload = function() {
+        setTimeout(function() {
+            document.getElementById('splash').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('splash').style.display = 'none';
+                document.getElementById('mainCard').style.display = 'block';
+            }, 800);
+        }, 2500); // ২.৫ সেকেন্ড পর অ্যাপ খুলবে
+    };
+
+    let selectedItemName = "আইটেম";
+
+    function selectItem(element, name) {
+        document.querySelectorAll('.item-btn').forEach(btn => btn.classList.remove('active'));
+        element.classList.add('active');
+        selectedItemName = name;
+        document.getElementById('display-name').innerText = name;
+        
+        // ফিল্ড ক্লিয়ার করা
+        document.getElementById('baseGram').value = '';
+        document.getElementById('basePrice').value = '';
+        document.getElementById('targetMoney').value = '';
+        document.getElementById('result').style.display = 'none';
+    }
+
+    function calculate() {
+        const bg = parseFloat(document.getElementById('baseGram').value);
+        const bp = parseFloat(document.getElementById('basePrice').value);
+        const tm = parseFloat(document.getElementById('targetMoney').value);
+        
+        if (bg > 0 && bp > 0 && tm > 0) {
+            let finalWeight = (bg / bp) * tm;
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('res-text').innerText = tm + " টাকায় " + selectedItemName + " পাবেন:";
+            
+            if(finalWeight >= 1000) {
+                document.getElementById('res-gram').innerText = (finalWeight / 1000).toFixed(2) + " কেজি";
+            } else {
+                document.getElementById('res-gram').innerText = Math.round(finalWeight) + " গ্রাম";
+            }
+        } else {
+            alert("দয়া করে সঠিক তথ্য ইনপুট দিন!");
+        }
+    }
+</script>
+
+</body>
+</html>
