@@ -3,159 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ডিজিটাল বাজার ক্যালকুলেটর</title>
+    <title>ডিজিটাল বাজার প্রো</title>
     <style>
-        :root { --primary: #2ecc71; --secondary: #27ae60; --bg: #f5f6fa; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
+        :root { --primary: #2ecc71; --bg: #f5f6fa; --text: #2c3e50; --card-bg: #ffffff; --input-border: #eeeeee; }
+        .dark-theme { --bg: #1a1a1a; --text: #ffffff; --card-bg: #2d2d2d; --input-border: #444444; }
+        
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: 0.3; color: var(--text); }
+        
+        /* Auth Screens */
+        .auth-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--card-bg); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; box-sizing: border-box; text-align: center; }
+        .auth-card { width: 100%; max-width: 350px; }
+        input { width: 100%; padding: 12px; border: 2px solid var(--input-border); border-radius: 12px; font-size: 15px; box-sizing: border-box; margin-bottom: 12px; background: var(--card-bg); color: var(--text); outline: none; }
+        .btn-green { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; }
 
-        /* Splash Screen Design */
-        #splash {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 1000;
-            transition: opacity 0.8s ease-out;
-        }
-        #splash img { width: 120px; height: 120px; margin-bottom: 20px; animation: pulse 1.5s infinite; }
-        #splash h1 { color: var(--primary); font-size: 24px; margin: 0; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        /* Header & Profile */
+        .header { position: fixed; top: 0; left: 0; width: 100%; background: var(--card-bg); padding: 12px 20px; box-sizing: border-box; display: none; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 100; }
+        #profile-display-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; margin-right: 12px; border: 2px solid var(--primary); }
+        .user-info { flex-grow: 1; }
+        .settings-btn { font-size: 22px; cursor: pointer; }
 
-        /* Main Card Design */
-        .card { 
-            background: #fff; padding: 25px; border-radius: 20px; 
-            box-shadow: 0 15px 40px rgba(0,0,0,0.1); width: 90%; max-width: 400px; 
-            display: none; /* শুরুতে লুকানো থাকবে */
-            animation: slideUp 0.6s ease-out;
-        }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        /* Main Card */
+        .card { background: var(--card-bg); padding: 25px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 92%; max-width: 400px; display: none; margin-top: 50px; }
+        .item-text { font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px; }
+        .green-txt { color: var(--primary); }
+        
+        .calc-section { background: rgba(46, 204, 113, 0.05); padding: 15px; border-radius: 18px; margin-top: 15px; border: 1px solid rgba(46, 204, 113, 0.1); }
+        label { font-size: 11px; color: #888; display: block; margin-bottom: 4px; text-align: left; }
+        .res-hint { font-size: 13px; color: var(--primary); font-weight: 600; display: block; text-align: center; margin-bottom: 10px; min-height: 18px; }
 
-        /* Menu Section */
-        .menu-wrapper { margin-bottom: 20px; text-align: center; }
-        .item-list { display: flex; overflow-x: auto; gap: 12px; padding: 10px 0; scrollbar-width: none; }
-        .item-list::-webkit-scrollbar { display: none; }
-        .item-btn { 
-            background: #f8f9fa; padding: 10px 20px; border-radius: 50px; 
-            border: 1px solid #ddd; cursor: pointer; transition: 0.3s; white-space: nowrap;
-        }
-        .item-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-
-        h2 { text-align: center; color: #2c3e50; margin-top: 0; font-size: 22px; }
-        .selected-name { color: var(--primary); }
-
-        .input-box { margin-bottom: 15px; }
-        label { font-size: 13px; color: #666; display: block; margin-bottom: 5px; }
-        input { 
-            width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 12px; 
-            font-size: 16px; box-sizing: border-box; transition: 0.3s;
-        }
-        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 8px rgba(46, 204, 113, 0.1); }
-
-        button { 
-            width: 100%; padding: 15px; background: var(--primary); color: white; 
-            border: none; border-radius: 12px; cursor: pointer; font-size: 18px; 
-            font-weight: bold; transition: 0.3s; margin-top: 10px;
-        }
-        button:active { transform: scale(0.97); }
-
-        #result { 
-            margin-top: 20px; padding: 15px; border-radius: 15px; 
-            background: #e8f5e9; text-align: center; display: none;
-            border: 1px solid #c8e6c9;
-        }
-        .res-val { font-size: 30px; color: var(--secondary); font-weight: 800; display: block; }
+        /* Settings Modal */
+        #settings-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; }
+        .settings-content { background: var(--card-bg); width: 85%; max-width: 320px; margin: 100px auto; padding: 25px; border-radius: 20px; text-align: center; }
+        .lang-btn { background: var(--bg); margin: 5px 0; border: 1px solid var(--input-border); padding: 10px; border-radius: 10px; cursor: pointer; width: 100%; color: var(--text); }
+        .footer-name { font-size: 10px; color: #888; margin-top: 20px; letter-spacing: 2px; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div id="splash">
-    <img src="logo.png" alt="Logo">
-    <h1>ডিজিটাল বাজার</h1>
-    <p style="color: #888; font-size: 12px;">লোড হচ্ছে...</p>
+<div id="reg-screen" class="auth-screen">
+    <div class="auth-card">
+        <h2 style="color:var(--primary)">রেজিস্ট্রেশন</h2>
+        <div style="margin-bottom: 15px;">
+            <label for="p-upload" style="cursor:pointer; text-align:center;">
+                <img id="p-preview" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width:80px; height:80px; border-radius:50%; object-fit:cover;">
+                <p style="font-size:12px; color:var(--primary);">ছবি আপলোড করুন</p>
+            </label>
+            <input type="file" id="p-upload" accept="image/*" style="display:none;" onchange="previewImage(this)">
+        </div>
+        <input type="text" id="firstName" placeholder="নাম">
+        <input type="text" id="lastName" placeholder="পদবী">
+        <input type="number" id="phone" placeholder="মোবাইল নম্বর">
+        <button class="btn-green" onclick="sendOTP()">OTP পাঠান</button>
+    </div>
 </div>
 
-<div class="card" id="mainCard">
-    <div class="menu-wrapper">
-        <div class="item-list">
-            <div class="item-btn" onclick="selectItem(this, 'মাছ')">🐟 মাছ</div>
-            <div class="item-btn" onclick="selectItem(this, 'মাংস')">🍖 মাংস</div>
-            <div class="item-btn" onclick="selectItem(this, 'তেল')">🧴 তেল</div>
-            <div class="item-btn" onclick="selectItem(this, 'সবজি')">🥦 সবজি</div>
-            <div class="item-btn" onclick="selectItem(this, 'মশলা')">🌶️ মশলা</div>
-            <div class="item-btn" onclick="selectItem(this, 'চাল/ডাল')">🍚 চাল/ডাল</div>
-        </div>
+<div id="otp-screen" class="auth-screen hidden">
+    <div class="auth-card">
+        <h2>ভেরিফিকেশন</h2>
+        <p style="font-size:14px; color:#666;">ডেমো কোড: 1234</p>
+        <input type="number" id="otpInput" placeholder="৪ ডিজিটের OTP দিন">
+        <button class="btn-green" onclick="verifyOTP()">ভেরিফাই করুন</button>
+    </div>
+</div>
+
+<div class="header" id="app-header">
+    <img id="profile-display-img" src="">
+    <div class="user-info">
+        <span class="user-name" id="display-full-name" style="font-weight:bold;"></span>
+    </div>
+    <div class="settings-btn" onclick="toggleSettings()">⚙️</div>
+</div>
+
+<div id="settings-modal" onclick="toggleSettings()">
+    <div class="settings-content" onclick="event.stopPropagation()">
+        <h3 id="set-title">সেটিংস</h3>
+        <p>ডার্ক মোড (Dark Mode):</p>
+        <button class="lang-btn" onclick="toggleDarkMode()" id="dark-btn">চালু করুন</button>
+        <p id="set-lang">ভাষা পরিবর্তন (Language):</p>
+        <button class="lang-btn" onclick="changeLang('bn')">বাংলা (Bengali)</button>
+        <button class="lang-btn" onclick="changeLang('en')">English</button>
+        <button style="margin-top:15px; background:#ff4757;" class="btn-green" onclick="logout()">লগ আউট (Logout)</button>
+        <div class="footer-name">BUILD BY GOPU</div>
+    </div>
+</div>
+
+<div class="card" id="main-card">
+    <div class="item-text">
+        <span class="green-txt" id="txt-item">আইটেম</span> <span id="txt-calc">এর হিসাব</span>
     </div>
 
-    <h2><span id="display-name" class="selected-name">আইটেম</span> এর হিসাব</h2>
-    
-    <div class="input-box">
-        <label>বাজারের ওজন (গ্রাম)</label>
-        <input type="number" id="baseGram" placeholder="যেমন: ১০০০ বা ২৫০">
-    </div>
-    <div class="input-box">
-        <label>বাজারের দাম (টাকা)</label>
-        <input type="number" id="basePrice" placeholder="ঐ ওজনের সঠিক দাম দিন">
+    <div style="background: rgba(0,0,0,0.03); padding: 15px; border-radius: 18px;">
+        <label id="lbl-bw">বাজারের ওজন (গ্রাম)</label>
+        <input type="number" id="baseGram" placeholder="যেমন: ১০০০" oninput="liveCalc()">
+        <label id="lbl-bp">বাজারের দাম (টাকা)</label>
+        <input type="number" id="basePrice" placeholder="যেমন: ৫০০" oninput="liveCalc()">
     </div>
 
-    <hr style="border: 0; border-top: 1px dashed #ddd; margin: 20px 0;">
+    <div class="calc-section">
+        <label id="lbl-mm">আপনার বাজেট (টাকা)</label>
+        <input type="number" id="myMoney" placeholder="বাজেট লিখুন" oninput="calcWeight()">
+        <span id="weightHint" class="res-hint"></span>
 
-    <div class="input-box">
-        <label>আপনার বাজেট (টাকা)</label>
-        <input type="number" id="targetMoney" placeholder="কত টাকার কিনতে চান?">
+        <div style="border-top: 1px dashed #ddd; margin: 10px 0;"></div>
+
+        <label id="lbl-mw">আপনার ওজন (গ্রাম)</label>
+        <input type="number" id="myWeight" placeholder="ওজন লিখুন" oninput="calcPrice()">
+        <span id="priceHint" class="res-hint"></span>
     </div>
 
-    <button onclick="calculate()">হিসাব দেখুন</button>
-
-    <div id="result">
-        <span id="res-text" style="color: #555;"></span>
-        <span class="res-val" id="res-gram"></span>
-    </div>
+    <button class="btn-green" onclick="liveCalc()" id="btn-calc-now">এখন হিসাব দেখুন</button>
 </div>
 
 <script>
-    // Splash Screen সরাবার লজিক
-    window.onload = function() {
-        setTimeout(function() {
-            document.getElementById('splash').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('splash').style.display = 'none';
-                document.getElementById('mainCard').style.display = 'block';
-            }, 800);
-        }, 2500); // ২.৫ সেকেন্ড পর অ্যাপ খুলবে
+    let isDark = false;
+    let currentLang = 'bn';
+    let profilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+    const langData = {
+        bn: { item: "আইটেম", calc: " এর হিসাব", bw: "বাজারের ওজন (গ্রাম)", bp: "বাজারের দাম (টাকা)", mm: "আপনার বাজেট (টাকা)", mw: "আপনার ওজন (গ্রাম)", btn: "এখন হিসাব দেখুন", resW: "আপনি পাবেন: ", resP: "দাম হবে: " },
+        en: { item: "Item", calc: " Calculation", bw: "Market Weight (Gm)", bp: "Market Price (Tk)", mm: "Your Budget (Tk)", mw: "Your Weight (Gm)", btn: "Calculate Now", resW: "You'll get: ", resP: "Price: " }
     };
 
-    let selectedItemName = "আইটেম";
-
-    function selectItem(element, name) {
-        document.querySelectorAll('.item-btn').forEach(btn => btn.classList.remove('active'));
-        element.classList.add('active');
-        selectedItemName = name;
-        document.getElementById('display-name').innerText = name;
-        
-        // ফিল্ড ক্লিয়ার করা
-        document.getElementById('baseGram').value = '';
-        document.getElementById('basePrice').value = '';
-        document.getElementById('targetMoney').value = '';
-        document.getElementById('result').style.display = 'none';
-    }
-
-    function calculate() {
-        const bg = parseFloat(document.getElementById('baseGram').value);
-        const bp = parseFloat(document.getElementById('basePrice').value);
-        const tm = parseFloat(document.getElementById('targetMoney').value);
-        
-        if (bg > 0 && bp > 0 && tm > 0) {
-            let finalWeight = (bg / bp) * tm;
-            document.getElementById('result').style.display = 'block';
-            document.getElementById('res-text').innerText = tm + " টাকায় " + selectedItemName + " পাবেন:";
-            
-            if(finalWeight >= 1000) {
-                document.getElementById('res-gram').innerText = (finalWeight / 1000).toFixed(2) + " কেজি";
-            } else {
-                document.getElementById('res-gram').innerText = Math.round(finalWeight) + " গ্রাম";
-            }
-        } else {
-            alert("দয়া করে সঠিক তথ্য ইনপুট দিন!");
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                profilePic = e.target.result;
+                document.getElementById('p-preview').src = profilePic;
+            };
+            reader.readAsDataURL(input.files[0]);
         }
     }
+
+    function sendOTP() {
+        const fn = document.getElementById('firstName').value;
+        const ph = document.getElementById('phone').value;
+        if(fn && ph) {
+            localStorage.setItem('tmp_n', fn + " " + document.getElementById('lastName').value);
+            localStorage.setItem('tmp_p', ph);
+            localStorage.setItem('tmp_img', profilePic);
+            document.getElementById('reg-screen').classList.add('hidden');
+            document.getElementById('otp-screen').classList.remove('hidden');
+        } else { alert("তথ্য দিন!"); }
+    }
+
+    function verifyOTP() {
+        if(document.getElementById('otpInput').value === "1234") {
+            localStorage.setItem('isLogged', 'true');
+            localStorage.setItem('user_n', localStorage.getItem('tmp_n'));
+            localStorage.setItem('user_img', localStorage.getItem('tmp_img'));
+            localStorage.setItem('user_p', localStorage.getItem('tmp_p'));
+            location.reload();
+        } else { alert("ভুল OTP!"); }
+    }
+
+    window.onload = function() {
+        if(localStorage.getItem('isLogged')) {
+            document.getElementById('reg-screen').classList.add('hidden');
+            document.getElementById('app-header').style.display = 'flex';
+            document.getElementById('main-card').style.display = 'block';
+            document.getElementById('display-full-name').innerText = localStorage.getItem('user_n');
+            document.getElementById('profile-display-img').src = localStorage.getItem('user_img');
+        }
+        if(localStorage.getItem('theme') === 'dark') toggleDarkMode();
+    };
+
+    function toggleSettings() {
+        const m = document.getElementById('settings-modal');
+        m.style.display = m.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function toggleDarkMode() {
+        isDark = !isDark;
+        document.body.classList.toggle('dark-theme', isDark);
+        document.getElementById('dark-btn').innerText = isDark ? "বন্ধ করুন" : "চালু করুন";
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+
+    function changeLang(l) {
+        currentLang = l;
+        const d = langData[l];
+        document.getElementById('txt-item').innerText = d.item;
+        document.getElementById('txt-calc').innerText = d.calc;
+        document.getElementById('lbl-bw').innerText = d.bw;
+        document.getElementById('lbl-bp').innerText = d.bp;
+        document.getElementById('lbl-mm').innerText = d.mm;
+        document.getElementById('lbl-mw').innerText = d.mw;
+        document.getElementById('btn-calc-now').innerText = d.btn;
+        toggleSettings();
+    }
+
+    function calcWeight() {
+        const bg = parseFloat(document.getElementById('baseGram').value);
+        const bp = parseFloat(document.getElementById('basePrice').value);
+        const m = parseFloat(document.getElementById('myMoney').value);
+        if(bg && bp && m) {
+            let r = (bg/bp)*m;
+            document.getElementById('weightHint').innerText = langData[currentLang].resW + (r >= 1000 ? (r/1000).toFixed(2)+" কেজি" : Math.round(r)+" গ্রাম");
+        }
+    }
+
+    function calcPrice() {
+        const bg = parseFloat(document.getElementById('baseGram').value);
+        const bp = parseFloat(document.getElementById('basePrice').value);
+        const w = parseFloat(document.getElementById('myWeight').value);
+        if(bg && bp && w) {
+            let r = (bp/bg)*w;
+            document.getElementById('priceHint').innerText = langData[currentLang].resP + r.toFixed(2) + " TK";
+        }
+    }
+
+    function liveCalc() { calcWeight(); calcPrice(); }
+    function logout() { localStorage.clear(); location.reload(); }
 </script>
 
 </body>
